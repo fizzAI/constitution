@@ -78,8 +78,8 @@ class OpenAI(Model):
         except ImportError:
             raise ClientNotInstalled("OpenAI")
         self.openai = OpenAI(api_key=api_key)
-        if model_name not in self.openai.models.list():
-            raise Exception(f"Model {model_name} not supported for OpenAI")
+        #if model_name not in self.openai.models.list():
+        #    raise Exception(f"Model {model_name} not supported for OpenAI")
         super().__init__(model_name, api_key)
 
     def complete_text(self, text: str, stop: List[str] = [], temperature: float = 0.7) -> str:
@@ -88,6 +88,7 @@ class OpenAI(Model):
             prompt=text,
             stop=stop,
             temperature=temperature,
+            max_tokens=1024,
         )
         return response.choices[0].text
     

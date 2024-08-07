@@ -9,7 +9,7 @@ CHAT_HISTORY_COLUMN = "rejected"
 SPLIT = "test"
 OUTPUT_DATASET_NAME = "Fizzarolli/hh-rlhf-h4-test-revised"
 
-MODEL = OpenRouter("meta-llama/llama-3.1-405b")
+MODEL = OpenAI("gpt-4-0613")
 
 CONSTITUTION = [
     # COHERENTNESS / HELPFULNESS / TRUTHFULNESS
