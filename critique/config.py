@@ -1,4 +1,4 @@
-from models import Groq, OpenAI, OpenRouter
+from models import Groq, OpenAI, OpenRouter, VertexAI
 
 # change these!
 
@@ -9,7 +9,8 @@ CHAT_HISTORY_COLUMN = "rejected"
 SPLIT = "test"
 OUTPUT_DATASET_NAME = "Fizzarolli/hh-rlhf-h4-test-revised"
 
-MODEL = OpenRouter("google/gemma-2-9b-it")
+#MODEL = OpenRouter("google/gemma-2-9b-it")
+MODEL = VertexAI("meta/llama3-405b-instruct-maas", project="lyrical-beach-431220-r0")
 
 """
 # default constitution partially inspired by the examples in the original paper

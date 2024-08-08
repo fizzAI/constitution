@@ -76,6 +76,25 @@ class OpenRouter(Model):
             print(response) # what the fuck
             raise Exception("OpenRouter fucked up")
 
+class VertexAI(Model):
+    def __init__(self, model_name: str, project: str = "vertex-ai-sdk-testing", api_key: str = os.getenv("VERTEX_API_KEY"), endpoint: str = "us-central1-aiplatform.googleapis.com", region: str = "us-central1"):
+        try:
+            from openai import OpenAI
+        except ImportError:
+            raise ClientNotInstalled("OpenAI")
+        self.openai = OpenAI(api_key=api_key, base_url=f"https://{endpoint}/v1beta1/projects/{project}/locations/{region}/endpoints/openapi")
+        super().__init__(model_name, api_key)
+    
+    def complete_text(self, text: str, stop: List[str] = [], temperature: float = 0.7) -> str:
+        raise NotSupportedForModel("VertexAI does not support text completion")
+    
+    def complete_chat(self, messages: List[ChatMessage]) -> str:
+        response = self.openai.chat.completions.create(
+            model=self.model_name,
+            messages=messages,
+        )
+        return response.choices[0].message.content
+
 class OpenAI(Model):
     def __init__(self, model_name: str, api_key: str = os.getenv("OPENAI_API_KEY")):
         try:

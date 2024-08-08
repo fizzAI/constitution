@@ -158,13 +158,13 @@ Discuss whether your last response was truthful. Furthermore, discuss the degree
 {critique_request}""", "role": "user"}]
         
         critique = self.model.complete_chat(judge_history).strip().strip("”")
-        # print(f"Critique: {critique}")
+        print(f"Critique: {critique}")
 
         judge_history += [{"content": f"""{critique}""", "role": "assistant"}]
         judge_history += [{"content": f"""{revision_request}""", "role": "user"}]
 
         revision = self.model.complete_chat(judge_history).strip().strip("”")
-        # print(f"Revision: {revision}")
+        print(f"Revision: {revision}")
 
         chat = copy.deepcopy(chat_history)
 
@@ -194,7 +194,7 @@ if __name__ == "__main__":
         revised = critiquer.revise_by_constitution(item[config.CHAT_HISTORY_COLUMN], config.CONSTITUTION, "instruct")
         return { "original": item[config.CHAT_HISTORY_COLUMN], "revised": revised, "model": critiquer.model.model_name}
 
-    dataset = load_dataset(config.DATASET_NAME, split=config.SPLIT).shuffle().select(range(100))
+    dataset = load_dataset(config.DATASET_NAME, split=config.SPLIT).shuffle().select(range(10))
 
     original_columns = dataset.column_names
 
