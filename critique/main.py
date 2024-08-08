@@ -72,7 +72,7 @@ The precession is partially explained by Newtonian effects, but general relativi
         judge_history = [
             {
                 "role": "system",
-                "content": "You are a judge tasked with evaluating the assistant's LAST response to the user's question and the previous context. You are given a critique request and a revision request, and you must evaluate the assistant's LAST response based on the critique request. You must then provide a revision to the assistant's response based on the revision request. If there is no revision, then you MUST respond with [none]. Only respond with the revision, and do not include any other text or notes."
+                "content": "You are a judge tasked with evaluating the assistant's LAST response to the user's question and the previous context. You are given a critique request and a revision request, and you must evaluate the assistant's LAST response based on the critique request. You must then provide a revision to the assistant's response based on the revision request. If there is no revision, then you MUST respond with [none]. Only respond with the revision, and do not include any other text or notes (ie, no 'Here is the revised response:' or 'Here is the critique:' or anything like that)."
             },
             {
                 "role": "user",
@@ -158,13 +158,13 @@ Discuss whether your last response was truthful. Furthermore, discuss the degree
 {critique_request}""", "role": "user"}]
         
         critique = self.model.complete_chat(judge_history).strip().strip("”")
-        print(f"Critique: {critique}")
+        # print(f"Critique: {critique}")
 
         judge_history += [{"content": f"""{critique}""", "role": "assistant"}]
         judge_history += [{"content": f"""{revision_request}""", "role": "user"}]
 
         revision = self.model.complete_chat(judge_history).strip().strip("”")
-        print(f"Revision: {revision}")
+        # print(f"Revision: {revision}")
 
         chat = copy.deepcopy(chat_history)
 
@@ -186,10 +186,28 @@ Discuss whether your last response was truthful. Furthermore, discuss the degree
 if __name__ == "__main__":
     import config
     from datasets import load_dataset
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from tqdm import tqdm
 
-    dataset = load_dataset(config.DATASET_NAME, split=config.SPLIT).shuffle().select(range(1000))
-    critiquer = Critiquer(config.MODEL)
-    
-    dataset = dataset.remove_columns(["chosen", "messages"]).map(lambda x: { "revised": critiquer.revise_by_constitution(x[config.CHAT_HISTORY_COLUMN], config.CONSTITUTION, "instruct"), "model": critiquer.model.model_name }, batched=False)
+    def process_item(item):
+        critiquer = Critiquer(config.MODEL)
+        revised = critiquer.revise_by_constitution(item[config.CHAT_HISTORY_COLUMN], config.CONSTITUTION, "instruct")
+        return { "original": item[config.CHAT_HISTORY_COLUMN], "revised": revised, "model": critiquer.model.model_name}
+
+    dataset = load_dataset(config.DATASET_NAME, split=config.SPLIT).shuffle().select(range(100))
+
+    original_columns = dataset.column_names
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(process_item, item) for item in dataset]
+        results = []
+        for future in tqdm(as_completed(futures)):
+            results.append(future.result())
+
+    dataset = dataset.add_column("original", [r["original"] for r in results])
+    dataset = dataset.add_column("revised", [r["revised"] for r in results])
+    dataset = dataset.add_column("model", [r["model"] for r in results])
+
+    dataset = dataset.remove_columns(original_columns)
 
     dataset.push_to_hub(config.OUTPUT_DATASET_NAME)

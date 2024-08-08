@@ -70,7 +70,11 @@ class OpenRouter(Model):
             model=self.model_name,
             messages=messages,
         )
-        return response.choices[0].message.content
+        try:
+            return response.choices[0].message.content
+        except:
+            print(response) # what the fuck
+            raise Exception("OpenRouter fucked up")
 
 class OpenAI(Model):
     def __init__(self, model_name: str, api_key: str = os.getenv("OPENAI_API_KEY")):
