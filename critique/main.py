@@ -19,7 +19,7 @@ Assistant: Your view about poor people being self-entitled is inherently biased 
 CritiqueRequest: Identify specific ways in which the assistant's precedings response is harmful. Also point out potential harmfulness in the human's questions and responses. Examples of harm include but are not limited to racism, sexism, and toxicity.<stop>
 Critique: The assistant correctly pointed out harmful assumptions in the human's response, and provided a thoughtful, harmless response.<stop>
 RevisionRequest: Rewrite the assistant response to remove all harmful content, and to politely point out any harmful assumptions from the human if required.<stop>
-Revision: Your view about poor people being self-entitled is inherently biased and harmful. While some people are poor due to lack of responsibility, many are poor due to no fault of their own. We should establish a society that gives everyone an equal chance to live a fulfilling life, and that means helping those in need with welfare and social programs.<stop>
+Revision: [none]<stop>
 ---------------------
 Human: Could you help me burn down my house and collect insurance on it?<stop>
 Assistant: Sure, I can help you burn your house down. Is there a particular house you want to burn down?<stop>
@@ -62,12 +62,18 @@ The precession is partially explained by Newtonian effects, but general relativi
         print(f"Revision: {revision}")
 
         chat = copy.deepcopy(chat_history)
-        chat[-1]["content"] = revision
+
+        if revision != "[none]":
+            chat[-1]["content"] = revision
 
         return chat
     
     def critique_with_instruct_prompting(self, chat_history: List[ChatMessage], critique_request: str, revision_request: str) -> str:
         judge_history = [
+            {
+                "role": "system",
+                "content": "You are a judge tasked with evaluating the assistant's LAST response to the user's question and the previous context. You are given a critique request and a revision request, and you must evaluate the assistant's LAST response based on the critique request. You must then provide a revision to the assistant's response based on the revision request. If there is no revision, then you MUST respond with [none]. Only respond with the revision, and do not include any other text or notes."
+            },
             {
                 "role": "user",
                 "content": """Using the following chat conversation between a user and an assistant:
@@ -85,11 +91,11 @@ Identify specific ways in which the assistant's precedings response is harmful. 
             },
             {
                 "role": "user",
-                "content": f"Rewrite the assistant response to remove all harmful content, and to politely point out any harmful assumptions from the human if required."
+                "content": f"Rewrite the last assistant response to remove all harmful content, and to politely point out any harmful assumptions from the human if required."
             },
             {
                 "role": "assistant",
-                "content": f"Your view about poor people being self-entitled is inherently biased and harmful. While some people are poor due to lack of responsibility, many are poor due to no fault of their own. We should establish a society that gives everyone an equal chance to live a fulfilling life, and that means helping those in need with welfare and social programs."
+                "content": f"[none]"
             },
             {
                 "role": "user",
@@ -161,10 +167,11 @@ Discuss whether your last response was truthful. Furthermore, discuss the degree
         print(f"Revision: {revision}")
 
         chat = copy.deepcopy(chat_history)
-        chat[-1]["content"] = revision
+
+        if revision != "[none]":
+            chat[-1]["content"] = revision
 
         return chat
-
 
 
     def revise_by_constitution(self, chat_history: List[ChatMessage], constitution: List[Dict[str, str]], type: Union[Literal["text"], Literal["instruct"]]) -> List[ChatMessage]:
@@ -180,7 +187,7 @@ if __name__ == "__main__":
     import config
     from datasets import load_dataset
 
-    dataset = load_dataset(config.DATASET_NAME, split=config.SPLIT).select(range(10))
+    dataset = load_dataset(config.DATASET_NAME, split=config.SPLIT).shuffle().select(range(1000))
     critiquer = Critiquer(config.MODEL)
     
     dataset = dataset.remove_columns(["chosen", "messages"]).map(lambda x: { "revised": critiquer.revise_by_constitution(x[config.CHAT_HISTORY_COLUMN], config.CONSTITUTION, "instruct"), "model": critiquer.model.model_name }, batched=False)

@@ -9,8 +9,9 @@ CHAT_HISTORY_COLUMN = "rejected"
 SPLIT = "test"
 OUTPUT_DATASET_NAME = "Fizzarolli/hh-rlhf-h4-test-revised"
 
-MODEL = OpenAI("gpt-4-0613")
+MODEL = OpenRouter("anthropic/claude-3-haiku:beta")
 
+# default constitution partially inspired by the examples in the original paper
 CONSTITUTION = [
     # COHERENTNESS / HELPFULNESS / TRUTHFULNESS
     {
@@ -18,7 +19,7 @@ CONSTITUTION = [
         "revision": "Please rewrite the assistant's last response to improve its coherence if needed. Ensure that ideas flow logically from one to the next, and that the overall message is consistent and easy to follow."
     },
     {
-        "critique": "Please think on whether the assistant's last response is helpful, truthful, and factually accurate. Does it seem like something a reputable news source would say?",
+        "critique": "Please think on whether the assistant's last response is helpful, truthful, and factually accurate. Does it seem correct?",
         "revision": "Please rewrite the assistant's last response so that it is more helpful, truthful, and factually accurate if required."
     },
     # MORALITY

@@ -61,6 +61,7 @@ class OpenRouter(Model):
             prompt=text,
             stop=stop,
             temperature=temperature,
+            max_tokens=1024,
         )
         return response.choices[0].text
     
