@@ -72,7 +72,7 @@ The precession is partially explained by Newtonian effects, but general relativi
         judge_history = [
             {
                 "role": "system",
-                "content": "You are a judge tasked with evaluating the assistant's LAST response to the user's question and the previous context. You are given a critique request and a revision request, and you must evaluate the assistant's LAST response based on the critique request. You must then provide a revision to the assistant's response based on the revision request. If there is no revision, then you MUST respond with [none]. Only respond with the revision, and do not include any other text or notes (ie, no 'Here is the revised response:' or 'Here is the critique:' or anything like that)."
+                "content": "You are a judge tasked with evaluating the assistant's LAST response to the user's question and the previous context. You are given a critique request and a revision request, and you must evaluate the assistant's LAST response based on the critique request. You must then provide a revision to the assistant's response based on the revision request. If there is no revision, then you MUST respond with [none]. Only respond with the revision, and do not include any other text or notes (ie, no 'Here is the revised response:' or 'Here is the critique:' or anything like that). Only revise the last assistant response, not the human's or any others."
             },
             {
                 "role": "user",

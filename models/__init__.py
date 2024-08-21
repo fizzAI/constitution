@@ -96,12 +96,12 @@ class VertexAI(Model):
         return response.choices[0].message.content
 
 class OpenAI(Model):
-    def __init__(self, model_name: str, api_key: str = os.getenv("OPENAI_API_KEY")):
+    def __init__(self, model_name: str, api_key: str = os.getenv("OPENAI_API_KEY"), base_url: str = None):
         try:
             from openai import OpenAI
         except ImportError:
             raise ClientNotInstalled("OpenAI")
-        self.openai = OpenAI(api_key=api_key)
+        self.openai = OpenAI(api_key=api_key, base_url=base_url)
         #if model_name not in self.openai.models.list():
         #    raise Exception(f"Model {model_name} not supported for OpenAI")
         super().__init__(model_name, api_key)
@@ -122,3 +122,23 @@ class OpenAI(Model):
             messages=messages,
         )
         return response.choices[0].message.content
+
+class Anthropic(Model):
+    def __init__(self, model_name: str, api_key: str = os.getenv("ANTHROPIC_API_KEY"), base_url: str = "https://api.anthropic.com"):
+        try:
+            from anthropic import Anthropic
+        except ImportError:
+            raise ClientNotInstalled("Anthropic")
+        self.anthropic = Anthropic(api_key=api_key, base_url=base_url)
+        super().__init__(model_name, api_key)
+
+    def complete_text(self, text: str, stop: List[str] = [], temperature: float = 0.7) -> str:
+        raise NotSupportedForModel("Anthropic does not support text completion")
+    
+    def complete_chat(self, messages: List[ChatMessage]) -> str:
+        message = self.anthropic.messages.create(
+            max_tokens=1024,
+            model=self.model_name,
+            messages=messages,
+        )
+        return message.content
