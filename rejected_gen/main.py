@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import copy
+import copy, random
 from models import Model
 from typing import List, Dict, Literal, TypedDict
 
@@ -40,7 +40,7 @@ class RejectedGenerator():
 
         for _ in range(generation_count):
             print(new_chat_history)
-            res = self.model.complete_text(CONTEXT, stop=[EOT_TOKEN])
+            res = self.model.complete_text(CONTEXT, stop=[EOT_TOKEN], temperature=random.choice(range(0.9,1.0,0.5)))
             this_role = ""
             if new_chat_history[-1]['from'] == 'user':
                 this_role = "assistant"
